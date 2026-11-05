@@ -1,0 +1,563 @@
+<title>عيد ميلاد بنين</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@700&family=Cairo:wght@400;600&display=swap">
+<style>
+/* Layout: black stage, cake centered, balloons/gifts/stars on the sides. Flow: start button -> 3-2-1 -> cake pulses 5s -> burst -> message + age 16 -> candles to blow out -> finale fireworks */
+:root {
+  --bg: #050507;
+  --fg: #fff4fa;
+  --pink: #ff5fa2;
+  --rose: #ffb3d1;
+  --gold: #ffd166;
+  --violet: #9b5de5;
+  --mint: #5eead4;
+  --font-display: 'Aref Ruqaa', 'Amiri', 'Traditional Arabic', serif;
+  --font-body: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  overflow: hidden;
+  padding-block: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+body::before {
+  content: ""; position: fixed; inset: 0;
+  background:
+    radial-gradient(60% 50% at 50% 48%, rgba(155, 93, 229, 0.22), transparent 70%),
+    radial-gradient(40% 30% at 50% 100%, rgba(255, 95, 162, 0.14), transparent 70%);
+  pointer-events: none;
+}
+.stage { position: relative; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; }
+#fx { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 4; }
+
+/* side decorations */
+.side { position: fixed; top: 0; bottom: 0; width: 22vw; max-width: 200px; pointer-events: none; z-index: 1; }
+.side.left { left: 0; }
+.side.right { right: 0; }
+.balloon { position: absolute; width: var(--w); animation: bob var(--d) ease-in-out infinite; animation-delay: var(--dl); transform-origin: 50% 100%; }
+.balloon svg { display: block; width: 100%; height: auto; overflow: visible; }
+@keyframes bob { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-22px) rotate(3deg); } }
+.star { position: absolute; width: var(--s); height: var(--s); background: var(--c); border-radius: 50%; box-shadow: 0 0 10px 2px var(--c); animation: tw var(--d) ease-in-out infinite; animation-delay: var(--dl); }
+@keyframes tw { 0%, 100% { opacity: 0.15; transform: scale(0.6); } 50% { opacity: 1; transform: scale(1.2); } }
+.gift { position: fixed; bottom: max(8px, env(safe-area-inset-bottom, 0px)); width: clamp(54px, 15vw, 110px); z-index: 2; pointer-events: none; }
+.gift.l { left: max(6px, env(safe-area-inset-left, 0px)); }
+.gift.r { right: max(6px, env(safe-area-inset-right, 0px)); }
+.gift svg { width: 100%; height: auto; display: block; }
+.streamer { position: fixed; top: 0; width: clamp(40px, 12vw, 90px); z-index: 2; pointer-events: none; }
+.streamer.l { left: 0; } .streamer.r { right: 0; transform: scaleX(-1); }
+.streamer svg { width: 100%; height: auto; display: block; }
+
+/* cake */
+.cake-wrap { position: relative; z-index: 3; width: min(44vw, 250px); aspect-ratio: 200 / 230; flex: none; }
+#cake { width: 100%; height: 100%; display: block; overflow: visible; will-change: transform; filter: drop-shadow(0 0 28px rgba(255, 95, 162, 0.45)); transition: opacity 0.4s; }
+.flame { transform-box: fill-box; transform-origin: 50% 100%; animation: flick 0.35s ease-in-out infinite alternate; }
+.flame:nth-of-type(2n) { animation-duration: 0.28s; }
+@keyframes flick { from { transform: scale(1, 1) rotate(-4deg); } to { transform: scale(0.85, 1.18) rotate(4deg); } }
+
+/* start screen */
+.start { position: relative; z-index: 8; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: opacity 0.4s; min-height: 82px; }
+.start.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+.go {
+  font: 600 1.15rem var(--font-body); color: #1b0a14; cursor: pointer; border: 0; border-radius: 999px; padding: 13px 32px;
+  background: linear-gradient(100deg, var(--gold), var(--pink)); box-shadow: 0 0 26px rgba(255, 95, 162, 0.55);
+  animation: throb 1.6s ease-in-out infinite;
+}
+.go:focus-visible, .replay:focus-visible, .cakebtn:focus-visible, .mute:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+@keyframes throb { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+.start small { color: var(--rose); font-size: 0.9rem; opacity: 0.85; }
+
+/* countdown */
+.count {
+  position: fixed; left: 0; right: 0; top: 50%; transform: translateY(-50%); z-index: 7; pointer-events: none; text-align: center;
+  font-family: var(--font-display); font-weight: 700; font-size: clamp(7rem, 38vw, 14rem); line-height: 1; opacity: 0;
+  background: linear-gradient(180deg, var(--gold), var(--pink)); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 30px rgba(255, 95, 162, 0.7));
+}
+.count.pop { animation: cpop 0.95s ease-out; }
+@keyframes cpop { 0% { opacity: 0; transform: translateY(-50%) scale(2.2); } 25% { opacity: 1; transform: translateY(-50%) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateY(-50%) scale(0.8); } }
+
+/* explosion */
+.flash { position: fixed; inset: 0; background: #fff; opacity: 0; z-index: 9; pointer-events: none; }
+.flash.go { animation: flash 0.7s ease-out; }
+@keyframes flash { 0% { opacity: 0.95; } 100% { opacity: 0; } }
+.ring { position: fixed; left: 50%; top: 50%; width: 40px; height: 40px; margin: -20px 0 0 -20px; border-radius: 50%; border: 4px solid var(--gold); opacity: 0; z-index: 9; pointer-events: none; }
+.ring.go { animation: ring 0.9s ease-out; }
+@keyframes ring { 0% { opacity: 1; transform: scale(0.3); } 100% { opacity: 0; transform: scale(28); } }
+
+/* message */
+.msg {
+  position: absolute; inset: 0; z-index: 5;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  text-align: center; padding: 0 12px;
+  opacity: 0; visibility: hidden; transform: scale(0.6);
+  transition: opacity 0.8s ease, transform 0.9s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+.msg.show { opacity: 1; visibility: visible; transform: scale(1); }
+.msg h1 {
+  margin: 0; font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(2rem, min(11vw, 9vh), 5.2rem); line-height: 1.35; text-wrap: balance;
+  background: linear-gradient(100deg, var(--gold), var(--pink) 50%, var(--violet));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 18px rgba(255, 95, 162, 0.45));
+}
+.msg p { margin: 0; font-size: clamp(1.1rem, min(5vw, 4vh), 1.9rem); font-weight: 600; color: var(--rose); letter-spacing: 0.02em; }
+.age {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1;
+  width: clamp(78px, min(22vw, 13vh), 112px); aspect-ratio: 1; border-radius: 50%; border: 3px solid var(--gold);
+  background: radial-gradient(circle, rgba(255, 209, 102, 0.25), rgba(155, 93, 229, 0.18));
+  box-shadow: 0 0 26px rgba(255, 209, 102, 0.5);
+  transform: scale(0); transition: transform 0.8s cubic-bezier(0.2, 1.6, 0.4, 1);
+}
+.age.show { transform: scale(1); }
+.age b { font-family: var(--font-display); font-size: clamp(2.2rem, min(9vw, 6vh), 3.6rem); color: var(--gold); font-weight: 700; }
+.age span { font-size: 0.8rem; color: var(--rose); margin-top: 2px; }
+
+.wish { display: flex; flex-direction: column; align-items: center; gap: 6px; max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.9s ease, opacity 0.9s ease; }
+.wish.show { max-height: 280px; opacity: 1; }
+.cakebtn { background: none; border: 0; padding: 4px; cursor: pointer; width: min(62vw, 270px); border-radius: 12px; }
+.cakebtn svg { display: block; width: 100%; height: auto; overflow: visible; }
+.hint { font-size: clamp(0.95rem, 4vw, 1.15rem); color: var(--rose); min-height: 1.6em; }
+.f { transform-box: fill-box; transform-origin: 50% 100%; animation: flick 0.3s ease-in-out infinite alternate; transition: opacity 0.25s, transform 0.25s; }
+.f.out { animation: none; opacity: 0; transform: scale(0); }
+.smoke { transform-box: fill-box; transform-origin: center; opacity: 0; }
+.smoke.go { animation: puff 1.6s ease-out forwards; }
+@keyframes puff { 0% { opacity: 0.85; transform: translateY(0) scale(0.6); } 100% { opacity: 0; transform: translateY(-26px) scale(2.6); } }
+.replay {
+  margin-top: 6px; font: 600 0.95rem var(--font-body); color: var(--fg); background: transparent;
+  border: 1px solid rgba(255, 179, 209, 0.5); border-radius: 999px; padding: 8px 20px; cursor: pointer;
+}
+.replay:hover { background: rgba(255, 95, 162, 0.18); }
+
+.mute {
+  position: fixed; top: max(10px, env(safe-area-inset-top, 0px)); left: max(10px, env(safe-area-inset-left, 0px)); z-index: 10;
+  width: 42px; height: 42px; border-radius: 50%; border: 1px solid rgba(255, 179, 209, 0.45); background: rgba(5, 5, 7, 0.6);
+  color: var(--fg); display: none; place-items: center; cursor: pointer; padding: 0;
+}
+.mute.on { display: grid; }
+.mute svg { width: 22px; height: 22px; }
+.mute .x { display: none; }
+.mute.muted .x { display: block; }
+.mute.muted .w { display: none; }
+@media (prefers-reduced-motion: reduce) { .balloon, .star, .flame, .go { animation: none; } }
+</style>
+
+<main class="stage">
+  <div class="side left" id="sideL" aria-hidden="true"></div>
+  <div class="side right" id="sideR" aria-hidden="true"></div>
+
+  <div class="streamer l" aria-hidden="true">
+    <svg viewBox="0 0 90 140"><g fill="none" stroke-width="5" stroke-linecap="round">
+      <path d="M8 0 Q30 30 8 55 T10 120" stroke="#ff5fa2"/><path d="M30 0 Q55 28 32 60 T34 105" stroke="#ffd166"/><path d="M52 0 Q72 25 55 50 T58 90" stroke="#5eead4"/></g></svg>
+  </div>
+  <div class="streamer r" aria-hidden="true">
+    <svg viewBox="0 0 90 140"><g fill="none" stroke-width="5" stroke-linecap="round">
+      <path d="M8 0 Q30 30 8 55 T10 120" stroke="#9b5de5"/><path d="M30 0 Q55 28 32 60 T34 105" stroke="#ff5fa2"/><path d="M52 0 Q72 25 55 50 T58 90" stroke="#ffd166"/></g></svg>
+  </div>
+
+  <div class="gift l" aria-hidden="true">
+    <svg viewBox="0 0 100 100"><rect x="10" y="40" width="80" height="55" rx="4" fill="#9b5de5"/><rect x="6" y="28" width="88" height="18" rx="4" fill="#b983ff"/>
+      <rect x="44" y="28" width="12" height="67" fill="#ffd166"/><path d="M50 28 C30 2 8 18 36 28 Z M50 28 C70 2 92 18 64 28 Z" fill="#ffd166"/></svg>
+  </div>
+  <div class="gift r" aria-hidden="true">
+    <svg viewBox="0 0 100 100"><rect x="10" y="40" width="80" height="55" rx="4" fill="#ff5fa2"/><rect x="6" y="28" width="88" height="18" rx="4" fill="#ff8fbf"/>
+      <rect x="44" y="28" width="12" height="67" fill="#5eead4"/><path d="M50 28 C30 2 8 18 36 28 Z M50 28 C70 2 92 18 64 28 Z" fill="#5eead4"/></svg>
+  </div>
+
+  <div class="cake-wrap" id="cakeWrap">
+    <svg id="cake" viewBox="0 0 200 230" role="img" aria-label="كعكة عيد ميلاد">
+      <ellipse cx="100" cy="212" rx="96" ry="12" fill="#e9e4ef"/>
+      <ellipse cx="100" cy="208" rx="96" ry="12" fill="#fff"/>
+      <rect x="22" y="148" width="156" height="60" rx="12" fill="#ff5fa2"/>
+      <path d="M22 160 q13 22 26 0 q13 22 26 0 q13 22 26 0 q13 22 26 0 q13 22 26 0 q13 22 26 0 V148 H22Z" fill="#ffe3ef"/>
+      <circle cx="46" cy="186" r="5" fill="#ffd166"/><circle cx="80" cy="192" r="5" fill="#5eead4"/><circle cx="120" cy="192" r="5" fill="#ffd166"/><circle cx="154" cy="186" r="5" fill="#5eead4"/>
+      <rect x="45" y="100" width="110" height="52" rx="11" fill="#9b5de5"/>
+      <path d="M45 112 q11 20 22 0 q11 20 22 0 q11 20 22 0 q11 20 22 0 q11 20 22 0 V100 H45Z" fill="#f1e6ff"/>
+      <circle cx="68" cy="138" r="4.5" fill="#ffd166"/><circle cx="100" cy="142" r="4.5" fill="#ff5fa2"/><circle cx="132" cy="138" r="4.5" fill="#ffd166"/>
+      <rect x="68" y="62" width="64" height="42" rx="10" fill="#ffb3d1"/>
+      <path d="M68 72 q8 16 16 0 q8 16 16 0 q8 16 16 0 q8 16 16 0 V62 H68Z" fill="#fff"/>
+      <circle cx="100" cy="56" r="7" fill="#e11d48"/><path d="M100 50 q4 -14 14 -14" stroke="#16a34a" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <rect x="78" y="34" width="7" height="30" rx="2" fill="#5eead4"/>
+      <rect x="116" y="34" width="7" height="30" rx="2" fill="#ffd166"/>
+      <path class="flame" d="M81.5 12 C74 22 76 32 81.5 32 C87 32 89 22 81.5 12Z" fill="#ffb020"/>
+      <path class="flame" d="M119.5 12 C112 22 114 32 119.5 32 C125 32 127 22 119.5 12Z" fill="#ffb020"/>
+    </svg>
+  </div>
+
+  <div class="start" id="startBox">
+    <button class="go" id="goBtn" type="button">اضغطي لبدء المفاجأة</button>
+    <small>ارفعي الصوت</small>
+  </div>
+
+  <section class="msg" id="msg" aria-live="polite">
+    <h1>عيد ميلاد سعيد يككو</h1>
+    <p>كل عام وانتي بخير</p>
+    <div class="age" id="age"><b>16</b><span>سنة</span></div>
+    <div class="wish" id="wish">
+      <button class="cakebtn" id="candleBtn" type="button" aria-label="اضغطي لإطفاء الشموع"><svg id="candleSvg" viewBox="0 0 220 120"></svg></button>
+      <div class="hint" id="hint">اضغطي على الكعكة لإطفاء الشموع وتمنّي أمنية</div>
+    </div>
+    <button class="replay" id="replay" type="button">شاهدي مرة أخرى</button>
+  </section>
+</main>
+
+<div class="count" id="count" aria-live="assertive"></div>
+<canvas id="fx"></canvas>
+<div class="flash" id="flash"></div>
+<div class="ring" id="ring"></div>
+<button class="mute" id="mute" type="button" aria-label="كتم الصوت">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M11 5 6 9H3v6h3l5 4z"/>
+    <g class="w"><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></g>
+    <g class="x"><path d="m16 9 5 6"/><path d="m21 9-5 6"/></g>
+  </svg>
+</button>
+
+<script>
+(function () {
+  var COLORS = ['#ff5fa2', '#ffd166', '#5eead4', '#9b5de5', '#ffb3d1', '#ffffff', '#60a5fa'];
+  var $ = function (id) { return document.getElementById(id); };
+  var cakeEl = $('cake'), wrap = $('cakeWrap'), msg = $('msg'), flash = $('flash'), ring = $('ring');
+  var startBox = $('startBox'), countEl = $('count'), ageEl = $('age'), wishEl = $('wish'), hintEl = $('hint');
+  var candleSvg = $('candleSvg'), candleBtn = $('candleBtn'), muteBtn = $('mute');
+  var cv = $('fx'), ctx = cv.getContext('2d');
+  var W = 0, H = 0, dpr = 1;
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  window.addEventListener('resize', resize); resize();
+
+  /* ================= AUDIO ================= */
+  var ac = null, master = null, musicBus = null, noiseBuf = null, muted = false, musicTimer = 0;
+  var F = { C4: 261.63, G4: 392, A4: 440, B4: 493.88, C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 783.99 };
+  var MELODY = [
+    [F.G4, .75], [F.G4, .25], [F.A4, 1], [F.G4, 1], [F.C5, 1], [F.B4, 2],
+    [F.G4, .75], [F.G4, .25], [F.A4, 1], [F.G4, 1], [F.D5, 1], [F.C5, 2],
+    [F.G4, .75], [F.G4, .25], [F.G5, 1], [F.E5, 1], [F.C5, 1], [F.B4, 1], [F.A4, 1],
+    [F.F5, .75], [F.F5, .25], [F.E5, 1], [F.C5, 1], [F.D5, 1], [F.C5, 2]
+  ];
+  var BEAT = 0.5;
+
+  function initAudio() {
+    if (!ac) {
+      try {
+        var C = window.AudioContext || window.webkitAudioContext;
+        ac = new C();
+        master = ac.createGain();
+        master.gain.value = muted ? 0 : 0.9;
+        master.connect(ac.destination);
+        noiseBuf = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate);
+        var d = noiseBuf.getChannelData(0);
+        for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      } catch (e) { ac = null; }
+    }
+    if (ac && ac.state === 'suspended') { try { ac.resume(); } catch (e) {} }
+  }
+  function tone(freq, t0, dur, vol, type, dest) {
+    var o = ac.createOscillator(), g = ac.createGain();
+    o.type = type || 'triangle'; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.linearRampToValueAtTime(vol, t0 + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g); g.connect(dest || master);
+    o.start(t0); o.stop(t0 + dur + 0.05);
+  }
+  function playLoop() {
+    if (!ac) return;
+    var t = ac.currentTime + 0.08, total = 0, bus = musicBus;
+    MELODY.forEach(function (n) {
+      var dur = n[1] * BEAT;
+      tone(n[0], t + total, Math.max(dur * 1.5, 0.45), 0.22, 'triangle', bus);
+      tone(n[0] * 2, t + total, Math.max(dur * 1.1, 0.3), 0.06, 'sine', bus);
+      total += dur;
+    });
+    musicTimer = setTimeout(playLoop, (total + 1.4) * 1000);
+  }
+  function startMusic() {
+    stopMusic();
+    if (!ac) return;
+    musicBus = ac.createGain(); musicBus.gain.value = 0.7; musicBus.connect(master);
+    playLoop();
+  }
+  function stopMusic() {
+    clearTimeout(musicTimer);
+    if (musicBus && ac) {
+      try { musicBus.gain.setTargetAtTime(0, ac.currentTime, 0.05); } catch (e) {}
+      var old = musicBus; setTimeout(function () { try { old.disconnect(); } catch (e) {} }, 600);
+    }
+    musicBus = null;
+  }
+  function noise(dur, type, freq, q, vol, sweepTo) {
+    if (!ac) return;
+    var t = ac.currentTime, s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+    s.buffer = noiseBuf; f.type = type; f.frequency.setValueAtTime(freq, t); f.Q.value = q;
+    if (sweepTo) f.frequency.exponentialRampToValueAtTime(sweepTo, t + dur);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    s.connect(f); f.connect(g); g.connect(master);
+    s.start(t, Math.random()); s.stop(t + dur + 0.05);
+  }
+  var sfx = {
+    tick: function (f) { if (ac) tone(f, ac.currentTime, 0.22, 0.45, 'sine'); },
+    boom: function () {
+      if (!ac) return;
+      noise(1.4, 'lowpass', 600, 0.7, 1.2);
+      var t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'sine'; o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(28, t + 0.9);
+      g.gain.setValueAtTime(1, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 1);
+      o.connect(g); g.connect(master); o.start(t); o.stop(t + 1.1);
+    },
+    pop: function () { noise(0.22, 'highpass', 1400, 0.8, 0.28 + Math.random() * 0.15); },
+    whoosh: function () { noise(0.7, 'bandpass', 500, 2, 0.07, 2200); },
+    blow: function () {
+      if (!ac) return;
+      var t = ac.currentTime, s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+      s.buffer = noiseBuf; f.type = 'bandpass'; f.frequency.value = 900; f.Q.value = 0.8;
+      g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.5, t + 0.25); g.gain.exponentialRampToValueAtTime(0.0001, t + 1);
+      s.connect(f); f.connect(g); g.connect(master); s.start(t, 0.3); s.stop(t + 1.1);
+    },
+    sparkle: function () {
+      if (!ac) return;
+      for (var i = 0; i < 6; i++) tone(1200 + Math.random() * 1600, ac.currentTime + i * 0.09, 0.3, 0.07, 'triangle');
+    }
+  };
+  function setMuted(m) {
+    muted = m;
+    if (master) master.gain.value = m ? 0 : 0.9;
+    muteBtn.classList.toggle('muted', m);
+    muteBtn.setAttribute('aria-label', m ? 'تشغيل الصوت' : 'كتم الصوت');
+  }
+  muteBtn.addEventListener('click', function () { setMuted(!muted); });
+
+  /* ================= SIDE DECORATIONS ================= */
+  function balloonSVG(c) {
+    return '<svg viewBox="0 0 60 130"><ellipse cx="30" cy="38" rx="26" ry="34" fill="' + c + '"/>' +
+      '<ellipse cx="20" cy="24" rx="6" ry="10" fill="#fff" opacity=".35"/>' +
+      '<path d="M30 72 l-5 8 h10z" fill="' + c + '"/>' +
+      '<path d="M30 80 q-8 14 0 24 t0 24" stroke="#cfcfe0" stroke-width="1.6" fill="none"/></svg>';
+  }
+  function fillSide(el, isLeft) {
+    var spec = [{ t: 6, x: 8, w: 56 }, { t: 24, x: 46, w: 44 }, { t: 40, x: 6, w: 62 }, { t: 58, x: 50, w: 48 }, { t: 72, x: 10, w: 52 }];
+    var cols = isLeft ? ['#ff5fa2', '#ffd166', '#9b5de5', '#5eead4', '#ff8fbf'] : ['#5eead4', '#9b5de5', '#ff5fa2', '#ffd166', '#60a5fa'];
+    spec.forEach(function (s, i) {
+      var b = document.createElement('div');
+      b.className = 'balloon';
+      b.style.top = s.t + '%';
+      b.style[isLeft ? 'left' : 'right'] = s.x + 'px';
+      b.style.setProperty('--w', s.w + 'px');
+      b.style.setProperty('--d', (3.2 + i * 0.5) + 's');
+      b.style.setProperty('--dl', (-i * 0.7) + 's');
+      b.innerHTML = balloonSVG(cols[i]);
+      el.appendChild(b);
+    });
+    for (var k = 0; k < 14; k++) {
+      var s2 = document.createElement('span');
+      s2.className = 'star';
+      s2.style.top = (Math.random() * 96) + '%';
+      s2.style[isLeft ? 'left' : 'right'] = (Math.random() * 90) + 'px';
+      s2.style.setProperty('--s', (2 + Math.random() * 4) + 'px');
+      s2.style.setProperty('--c', COLORS[(Math.random() * COLORS.length) | 0]);
+      s2.style.setProperty('--d', (1.4 + Math.random() * 2) + 's');
+      s2.style.setProperty('--dl', (-Math.random() * 3) + 's');
+      el.appendChild(s2);
+    }
+  }
+  fillSide($('sideL'), true);
+  fillSide($('sideR'), false);
+
+  /* ================= CANDLE CAKE (16 candles) ================= */
+  var flames = [], smokes = [];
+  (function buildCandleCake() {
+    var h = '<ellipse cx="110" cy="112" rx="104" ry="8" fill="#fff"/>' +
+      '<rect x="14" y="62" width="192" height="46" rx="9" fill="#ff5fa2"/>' +
+      '<path d="M14 72 q8 16 16 0 q8 16 16 0 q8 16 16 0 q8 16 16 0 q8 16 16 0 q8 16 16 0 q8 16 16 0 q8 16 16 0 q8 16 16 0 q8 16 16 0 q8 16 16 0 q8 16 16 0 V62 H14Z" fill="#ffe3ef"/>' +
+      '<circle cx="50" cy="96" r="4" fill="#ffd166"/><circle cx="110" cy="98" r="4" fill="#5eead4"/><circle cx="170" cy="96" r="4" fill="#ffd166"/>';
+    for (var i = 0; i < 16; i++) {
+      var x = 30 + i * (160 / 15), c = ['#5eead4', '#ffd166', '#9b5de5', '#ffb3d1'][i % 4];
+      h += '<rect x="' + (x - 2.5) + '" y="40" width="5" height="23" rx="1.5" fill="' + c + '"/>';
+      h += '<path class="f" id="fl' + i + '" d="M' + x + ' 24 C' + (x - 5) + ' 31 ' + (x - 4) + ' 39 ' + x + ' 39 C' + (x + 4) + ' 39 ' + (x + 5) + ' 31 ' + x + ' 24Z" fill="#ffb020"/>';
+      h += '<circle class="smoke" id="sm' + i + '" cx="' + x + '" cy="26" r="3" fill="#d9d4e3"/>';
+    }
+    candleSvg.innerHTML = h;
+    for (var j = 0; j < 16; j++) { flames.push($('fl' + j)); smokes.push($('sm' + j)); }
+  })();
+
+  /* ================= PARTICLES, CONFETTI, FIREWORKS ================= */
+  var parts = [], rockets = [];
+  function ambient() {
+    parts.push({ x: Math.random() * W, y: -10, vx: (Math.random() - 0.5) * 20, vy: 30 + Math.random() * 50, g: 0,
+      w: 5 + Math.random() * 5, h: 3 + Math.random() * 4, r: Math.random() * 6, vr: (Math.random() - 0.5) * 6,
+      c: COLORS[(Math.random() * COLORS.length) | 0], life: 1, decay: 0, amb: true, o: 0.75 });
+  }
+  function burst() {
+    var rc = wrap.getBoundingClientRect();
+    var cx = rc.left + rc.width / 2, cy = rc.top + rc.height / 2;
+    var cakeCols = ['#ff5fa2', '#ffe3ef', '#9b5de5', '#ffb3d1', '#ffd166'];
+    for (var i = 0; i < 260; i++) {
+      var a = Math.random() * Math.PI * 2, sp = 120 + Math.random() * 720, chunk = i < 90;
+      parts.push({ x: cx, y: cy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 120, g: 520,
+        w: chunk ? 8 + Math.random() * 12 : 5 + Math.random() * 6, h: chunk ? 8 + Math.random() * 10 : 3 + Math.random() * 5,
+        r: Math.random() * 6, vr: (Math.random() - 0.5) * 18,
+        c: chunk ? cakeCols[(Math.random() * cakeCols.length) | 0] : COLORS[(Math.random() * COLORS.length) | 0],
+        life: 1, decay: 0.18 + Math.random() * 0.25, amb: false, o: 1, round: chunk && Math.random() < 0.4 });
+    }
+  }
+  function launch(x, ty) {
+    var c = COLORS[(Math.random() * 5) | 0];
+    rockets.push({ x: x, y: H + 10, vy: -(H + 10 - ty) / 1.0, ty: ty, c: c });
+    sfx.whoosh();
+  }
+  function launchRandom() { launch(W * (0.1 + Math.random() * 0.8), H * (0.12 + Math.random() * 0.33)); }
+  function fwBurst(x, y, c) {
+    var n = 70;
+    for (var i = 0; i < n; i++) {
+      var a = (i / n) * Math.PI * 2 + Math.random() * 0.2, sp = 70 + Math.random() * 230;
+      parts.push({ spark: true, x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, g: 130, w: 2, h: 2, r: 0, vr: 0,
+        c: Math.random() < 0.25 ? '#ffffff' : c, life: 1, decay: 0.55 + Math.random() * 0.5, amb: false, o: 1 });
+    }
+    sfx.pop();
+  }
+
+  var last = performance.now(), ambAcc = 0;
+  function tickFx(now) {
+    var dt = Math.min((now - last) / 1000, 0.05); last = now;
+    ctx.clearRect(0, 0, W, H);
+    ambAcc += dt;
+    if (ambAcc > 0.16) { ambAcc = 0; if (parts.length < 500) ambient(); }
+    for (var k = rockets.length - 1; k >= 0; k--) {
+      var r = rockets[k];
+      r.y += r.vy * dt;
+      parts.push({ spark: true, x: r.x, y: r.y, vx: (Math.random() - 0.5) * 24, vy: 40, g: 60, w: 2, h: 2, r: 0, vr: 0, c: '#ffd9a0', life: 1, decay: 2.6, amb: false, o: 0.9 });
+      if (r.y <= r.ty) { fwBurst(r.x, r.y, r.c); rockets.splice(k, 1); }
+    }
+    for (var i = parts.length - 1; i >= 0; i--) {
+      var p = parts[i];
+      p.vy += p.g * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.r += p.vr * dt;
+      if (!p.amb) { p.vx *= 0.992; p.life -= p.decay * dt; }
+      if (p.y > H + 20 || p.life <= 0) { parts.splice(i, 1); continue; }
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, Math.min(1, p.life)) * p.o;
+      if (p.spark) {
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.strokeStyle = p.c; ctx.lineWidth = 2.2; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - p.vx * 0.045, p.y - p.vy * 0.045); ctx.stroke();
+      } else {
+        ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.c;
+        if (p.round) { ctx.beginPath(); ctx.arc(0, 0, p.w / 2, 0, 6.2832); ctx.fill(); }
+        else ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      }
+      ctx.restore();
+    }
+    requestAnimationFrame(tickFx);
+  }
+  requestAnimationFrame(tickFx);
+
+  /* ================= TIMELINE ================= */
+  var DURATION = 5;
+  var raf = 0, startT = 0, exploded = false, timers = [], fwTimer = 0, blown = false;
+
+  function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+  function clearAll() {
+    timers.forEach(clearTimeout); timers = [];
+    clearInterval(fwTimer); cancelAnimationFrame(raf);
+  }
+
+  function countStep(n, freq) {
+    countEl.textContent = n;
+    countEl.classList.remove('pop'); void countEl.offsetWidth; countEl.classList.add('pop');
+    sfx.tick(freq);
+  }
+
+  function frame(now) {
+    var t = (now - startT) / 1000;
+    if (t >= DURATION) { explode(); return; }
+    var p = t / DURATION;
+    var base = 0.5 + 0.84 * p * p + 0.36 * p + 0.2;
+    var amp = 0.08 + 0.26 * p;
+    var pulse = 1 + amp * Math.sin(t * Math.PI * 2 * 1.5);
+    var s = base * pulse;
+    var shake = p > 0.75 ? (Math.random() - 0.5) * 6 * ((p - 0.75) / 0.25) : 0;
+    cakeEl.style.transform = 'translate(' + shake + 'px,' + (shake * 0.6) + 'px) scale(' + s.toFixed(3) + ') rotate(' + (shake * 0.4) + 'deg)';
+    raf = requestAnimationFrame(frame);
+  }
+
+  function explode() {
+    if (exploded) return; exploded = true;
+    burst(); sfx.boom();
+    cakeEl.style.transition = 'opacity .12s';
+    cakeEl.style.opacity = '0';
+    flash.classList.remove('go'); ring.classList.remove('go'); void flash.offsetWidth;
+    flash.classList.add('go'); ring.classList.add('go');
+    later(function () { msg.classList.add('show'); }, 550);
+    later(function () { ageEl.classList.add('show'); sfx.sparkle(); }, 1500);
+    later(function () { launchRandom(); }, 700);
+    later(function () { fwTimer = setInterval(launchRandom, 1100); }, 1200);
+    later(function () { wishEl.classList.add('show'); }, 3600);
+  }
+
+  function blowOut() {
+    if (blown) return; blown = true;
+    candleBtn.disabled = true; candleBtn.style.cursor = 'default';
+    sfx.blow();
+    flames.forEach(function (f, i) {
+      var d = (i * 0.045);
+      f.style.transitionDelay = d + 's';
+      f.classList.add('out');
+      later(function () { smokes[i].classList.add('go'); }, d * 1000 + 150);
+    });
+    hintEl.textContent = 'تمنّي أمنية...';
+    clearInterval(fwTimer);
+    later(function () {
+      sfx.sparkle();
+      for (var i = 0; i < 12; i++) (function (i) { later(launchRandom, i * 220); })(i);
+      hintEl.textContent = 'كل عام وانتي بخير، وعقبال ألف سنة';
+    }, 1100);
+    later(function () { fwTimer = setInterval(launchRandom, 1400); }, 4000);
+  }
+  candleBtn.addEventListener('click', blowOut);
+
+  function resetState() {
+    clearAll();
+    exploded = false; blown = false;
+    msg.classList.remove('show'); ageEl.classList.remove('show'); wishEl.classList.remove('show');
+    flames.forEach(function (f) { f.classList.remove('out'); f.style.transitionDelay = ''; });
+    smokes.forEach(function (s) { s.classList.remove('go'); });
+    candleBtn.disabled = false; candleBtn.style.cursor = 'pointer';
+    hintEl.textContent = 'اضغطي على الكعكة لإطفاء الشموع وتمنّي أمنية';
+    rockets = []; countEl.classList.remove('pop');
+    cakeEl.style.transition = 'none';
+    cakeEl.style.opacity = '0.3';
+    cakeEl.style.transform = 'scale(0.5)';
+    void cakeEl.offsetWidth;
+    cakeEl.style.transition = 'opacity .4s';
+  }
+
+  function run() {
+    initAudio();
+    resetState();
+    startBox.classList.add('hide');
+    muteBtn.classList.add('on');
+    startMusic();
+    countStep(3, 520);
+    later(function () { countStep(2, 620); }, 1000);
+    later(function () { countStep(1, 760); }, 2000);
+    later(function () {
+      cakeEl.style.opacity = '1';
+      startT = performance.now();
+      raf = requestAnimationFrame(frame);
+    }, 3000);
+  }
+
+  $('goBtn').addEventListener('click', run);
+  $('replay').addEventListener('click', run);
+})();
+</script>
